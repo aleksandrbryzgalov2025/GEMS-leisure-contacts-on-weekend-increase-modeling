@@ -67,9 +67,6 @@ function GEMS.transmission_probability(transFunc::SettingSpecificTransmissionRat
 end
 
 
-### RUNNING A SIMULATION AND PLOTTING RESULTS
-
-
 ######################################## Contacts Sampling ############################################
 
 @with_kw struct FixedContacts <: ContactSamplingMethod
@@ -192,7 +189,7 @@ for i in 1:100
 
 # !!! check the folder path !!!
 
-    sim = Simulation(BASE_FOLDER * "/applications/workdays_weekends/weekends_paper/lp_1_ip_5_gs5/synth_pop_lp1_ip5_gs5.toml", label = "baseline")
+    sim = Simulation(BASE_FOLDER * "/applications/3.05 Leisure contacts variation (Tab. 4)/lp_1_ip_5_gs5/synth_pop_lp1_ip5_gs5.toml", label = "baseline")
 
     run!(sim)
     rd = ResultData(sim, style = "LightRD")
@@ -200,25 +197,22 @@ for i in 1:100
     println(i)
 end
 
-#rd = rds[1]
-#gemsplot(rd, type = :TickCasesBySetting, xlims = (0, 500))
-
 bd = BatchData(rds)
 
 rep = buildreport(bd, "Report")
 
 # !!! check the folder path !!!
-generate(rep, BASE_FOLDER  *  "/applications/workdays_weekends/weekends_paper/lp_1_ip_5_gs5")
+generate(rep, BASE_FOLDER  *  "/applications/3.05 Leisure contacts variation (Tab. 4)/lp_1_ip_5_gs5")
 
 
 # get aggregated info on total infections
 save_ag_data_base = tick_cases(bd)
 
 # !!! check the folder path !!!
-jldsave(BASE_FOLDER*"/applications/workdays_weekends/weekends_paper/lp_1_ip_5_gs5/infections_ag.jld2"; save_ag_data_base)
+jldsave(BASE_FOLDER*"/applications/3.05 Leisure contacts variation (Tab. 4)/lp_1_ip_5_gs5/infections_ag.jld2"; save_ag_data_base)
 
 # !!! check the folder path !!!
-save_ag_data = JLD2.load(BASE_FOLDER  *"/applications/workdays_weekends/weekends_paper/lp_1_ip_5_gs5/infections_ag.jld2")["save_ag_data_base"]
+save_ag_data = JLD2.load(BASE_FOLDER  *"/applications/3.05 Leisure contacts variation (Tab. 4)/lp_1_ip_5_gs5/infections_ag.jld2")["save_ag_data_base"]
 
 plot(save_ag_data.tick, [save_ag_data_base.mean], 
     #bar_width = 0.2,]

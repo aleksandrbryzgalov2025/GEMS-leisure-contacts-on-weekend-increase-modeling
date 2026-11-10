@@ -1,100 +1,5 @@
-# the real case uses municipality instead of global setting
-
-#=
-    The  GEMS framework makes it very easy to include
-    various types of transmission rates, detemining the
-    likelyhood of a disease transmission dependent on the
-    characteristics of the involved agents and the setting. 
-=#
-#using CSV
-# first, load the GEMS package and required dependencies
-# Note: if you define a new plot within the GEMS package,
-# all these dependencies will be readily available
 using GEMS, Parameters, DataFrames, TOML, Plots, FileIO, Distributions, CSV, CategoricalArrays, JLD2, Random
 BASE_FOLDER = dirname(dirname(pathof(GEMS)))
-
-##################### Distribution ###########################
-using Distributions, StatsFuns
-
-function GEMS.create_distribution(params::Vector{Float64}, type::String)
-    try 
-        return eval(Symbol(type))(params...)
-    catch
-        throw("Distribution $type cannot be created with parameters: $params")
-    end
-end
-
-struct ZeroTruncatedPoisson <: DiscreteUnivariateDistribution
-    λ::Float64
-    function ZeroTruncatedPoisson(λ::Float64)
-        λ > 0 || throw(ArgumentError("λ must be positive."))
-        new(λ)
-    end
-end
-
-function ZeroTruncatedPoisson(params)
-    length(params) == 1 || throw(ArgumentError("Expected one parameter for ZeroTruncatedPoisson"))
-    return ZeroTruncatedPoisson(float(params[1]))
-end
-
-# Support
-Distributions.support(d::ZeroTruncatedPoisson) = 1:typemax(Int)
-
-# PMF
-function Distributions.pdf(d::ZeroTruncatedPoisson, k::Int)
-    k < 1 && return 0.0
-    λ = d.λ
-    pois = Poisson(λ)
-    return pdf(pois, k) / (1 - pdf(pois, 0))
-end
-
-# log PMF
-function Distributions.logpdf(d::ZeroTruncatedPoisson, k::Int)
-    k < 1 && return -Inf
-    λ = d.λ
-    pois = Poisson(λ)
-    return logpdf(pois, k) - log(1 - pdf(pois, 0))
-end
-
-# Sampling
-function Base.rand(d::ZeroTruncatedPoisson)
-    λ = d.λ
-    while true
-        x = rand(Poisson(λ))
-        x > 0 && return x
-    end
-end
-
-# Mean
-function Distributions.mean(d::ZeroTruncatedPoisson)
-    λ = d.λ
-    return λ / (1 - exp(-λ))
-end
-
-# Variance
-function Distributions.var(d::ZeroTruncatedPoisson)
-    λ = d.λ
-    Z = 1 - exp(-λ)
-    return λ * (1 + λ * exp(-λ) / Z) / Z - (λ / Z)^2
-end
-
-# CDF
-function Distributions.cdf(d::ZeroTruncatedPoisson, k::Int)
-    k < 1 && return 0.0
-    λ = d.λ
-    pois = Poisson(λ)
-    return (cdf(pois, k) - pdf(pois, 0)) / (1 - pdf(pois, 0))
-end
-
-
-d = ZeroTruncatedPoisson(2.822)
-
-mean(d)        # Expected value
-#var(d)         # Variance
-#cdf(d, 5)      # Cumulative probability up to 5
-#rand(d, 10)    # Generate 10 random samples
-###############################################################
-
 
 ### SETTING UP THE NEW STRUCT
 # A new TransmissionFunction requires the definition of a struct
@@ -159,24 +64,14 @@ function GEMS.transmission_probability(transFunc::SettingSpecificTransmissionRat
     end
 end
 
-### TESTING
-# Additionaly to the creation of new transmission function appropirate tests should be defined
-# in tests/infectionstest.jl. There is a specific part for testing each transmission struct and function
-
-### RUNNING A SIMULATION AND PLOTTING RESULTS
-
-
 ######################################## Contacts Sampling ############################################
 
 @with_kw struct FixedContacts <: ContactSamplingMethod
     distribution::String = "Poisson"
     mean_number_of_contacts_weekday::Float64
     mean_number_of_contacts_weekend::Float64
-    #mean_number_of_contacts_friday::Float64
     wdDistribution::Distribution = eval(Meta.parse(distribution))(mean_number_of_contacts_weekday...)
     weDistribution::Distribution = eval(Meta.parse(distribution))(mean_number_of_contacts_weekend...)
-    #fDistribution::Distribution = eval(Meta.parse(distribution))(mean_number_of_contacts_friday...)
-    # the fact, that the contacts differ between weekdays and weekend will be implement in the `sample_contacts()` function 
 end
 
 #=
@@ -199,10 +94,6 @@ Following this a "weekend" would occur every 6 and 7 ticks (0 = Mon, 1 = Tue, ..
 """
 function GEMS.sample_contacts(fixed_contacts::FixedContacts, setting::Setting, ego::Individual, present_individuals::Vector{Individual},tick::Int16)
     rand(fixed_contacts.wdDistribution)
-    # get the parameters stored in the "FixedContacts" struct
-    # contacts_weekday::Int64 = rand(fixed_contacts.wdDistribution)
-    # contacts_weekend::Int64 = rand(fixed_contacts.weDistribution)
-    # contacts_friday::Int64 = rand(fixed_contacts.fDistribution)
 
     if isempty(present_individuals)
         throw(ArgumentError("No Individual is present in $setting. Please provide a Setting, where at least 1 Individual is present!"))
@@ -216,8 +107,6 @@ function GEMS.sample_contacts(fixed_contacts::FixedContacts, setting::Setting, e
 
     if (tick % 7) == 5 || (tick % 7) == 6
         num_of_contacts = rand(fixed_contacts.weDistribution)
-    # elseif (tick % 7) == 4 #friday
-    #     num_of_contacts = rand(fixed_contacts.fDistribution)
     else
         num_of_contacts = rand(fixed_contacts.wdDistribution)
     end
@@ -293,7 +182,7 @@ rds = ResultData[]
 
 for i in 1:100
     sim = nothing
-    sim = Simulation(BASE_FOLDER * "/applications/workdays_weekends/weekends_paper/lp_7_ip_5_alt/synth_pop_lp7_ip5_alt.toml", label = "alternative latent period 7")
+    sim = Simulation(BASE_FOLDER * "/applications/3.12 Latent period vatiation (Fig. 2-3)/alternative/lp_7_ip_5_alt/synth_pop_lp7_ip5_alt.toml", label = "alternative latent period 7")
 
     run!(sim)
     rd = ResultData(sim, style = "LightRD")
@@ -301,20 +190,18 @@ for i in 1:100
     println(i)
 end
 
-#rd = rds[1]
-#gemsplot(rd, type = :TickCasesBySetting, xlims = (0, 500))
 
 bd = BatchData(rds)
 
 rep = buildreport(bd, "Report")
-generate(rep, BASE_FOLDER  *  "/applications/workdays_weekends/weekends_paper/lp_7_ip_5_alt")
+generate(rep, BASE_FOLDER  *  "/applications/3.12 Latent period vatiation (Fig. 2-3)/alternative/lp_7_ip_5_alt")
 
 
 # get aggregated info on total infections
 save_ag_data_base = tick_cases(bd)
 
-jldsave(BASE_FOLDER*"/applications/workdays_weekends/weekends_paper/lp_7_ip_5_alt/infections_ag.jld2"; save_ag_data_base)
-save_ag_data = JLD2.load(BASE_FOLDER  *"/applications/workdays_weekends/weekends_paper/lp_7_ip_5_alt/infections_ag.jld2")["save_ag_data_base"]
+jldsave(BASE_FOLDER*"/applications/3.12 Latent period vatiation (Fig. 2-3)/alternative/lp_7_ip_5_alt/infections_ag.jld2"; save_ag_data_base)
+save_ag_data = JLD2.load(BASE_FOLDER  *"/applications/3.12 Latent period vatiation (Fig. 2-3)/alternative/lp_7_ip_5_alt/infections_ag.jld2")["save_ag_data_base"]
 
 plot(save_ag_data.tick, [save_ag_data_base.mean], 
     #bar_width = 0.2,]
@@ -326,70 +213,3 @@ label= ["mean baseline"])
 
 
 ########### END of batch runs ###################################
-
-
-########### Case of 1 simulation ###################################
-sim1 = nothing
-sim2 = nothing
-# onset 1
-sim1 = Simulation(BASE_FOLDER * "/applications/workdays_weekends/synth_pop_05mln_wp100000_onset1_gs_inf_0.075.toml", label = "baseline")
-sim2 = Simulation(BASE_FOLDER * "/applications/workdays_weekends/synth_pop_05mln_wp100000_onset1_gs_inf_0.075_alt.toml", label = "alternative")
-run!(sim1)
-run!(sim2)
-
-rd1 = ResultData(sim1)
-rd2 = ResultData(sim2)
-gemsplot(rd1, type = :TickCasesBySetting, xlims = (0, 200))
-gemsplot([rd1, rd2], type = :TickCasesBySetting, xlims = (0, 200))
-
-gemsplot(rd1, type = :TickCases, xlims = (0, 200))
-#gemsplot([rd1, rd2], type = :EffectiveReproduction, xlims = (0, 500))
-#gemsplot([rd1 rd2], type = :LatencyHistogram)
-
-gemsplot(rd1, type = :CumulativeCases, xlims = (0, 200))
-
-
-
-
-
-comp = rd |> compartment_periods
-mean(comp[!,"exposed"])
-########### Case of 1 simulation END ###################################
-
-
-
-
-################################ CALIBRATION CHECK OF SHARES ####################
-infections_data = rd |> infections
-total_inf = nrow(infections_data)
-#vscodedisplay(infections_data)
-
-#combine(groupby(infections_data, [:setting_type]), nrow => :count)
-data_f = combine(groupby(infections_data, [:tick, :setting_type]), nrow => :count)
-
-sort!(data_f)
-
-#vscodedisplay(data_f)
-
-res_settings_infections = combine(groupby(infections_data, [:setting_type]), nrow => :count)
-sort!(res_settings_infections)
-#vscodedisplay(res_settings_infections)
-#-------------------------------------------------------------------
-plt = bar(res_settings_infections.setting_type, res_settings_infections.count/total_inf, label= "Share of Infections by setting")
-
-res_settings_infections.count/total_inf
-################################ CALIBRATION CHECK OF SHARES ####################
-
-
-onset = [1,2,3,4,5,6,7]
-baseline = [8.6,	7.3, 6.9,	6.3,	6.2,	5.3,	4.9]
-alternative = [5.4,	5.0,	6.1,	7.1,	8.1,	8.2,	5.1]
-
-
-plt = plot(onset, [baseline, alternative], seriestype = :line, 
-label = ["baseline" "alternative"], 
-linestyle = :auto, 
-marker = :circle,
-xlabel = "symptoms onset period",
-ylabel = "attack rate, %",
-ylims = [-0.4,10])

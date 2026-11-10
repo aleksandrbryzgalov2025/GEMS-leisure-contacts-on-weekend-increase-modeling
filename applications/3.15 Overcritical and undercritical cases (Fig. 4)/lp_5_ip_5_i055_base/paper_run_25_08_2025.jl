@@ -182,7 +182,7 @@ rds = ResultData[]
 
 for i in 1:100
     sim = nothing
-    sim = Simulation(BASE_FOLDER * "/applications/workdays_weekends/weekends_paper/lp_5_ip_5_i055_base/synth_pop_lp5_ip5_i055_base.toml", label = "baseline undercritical?")
+    sim = Simulation(BASE_FOLDER * "/applications/3.15 Overcritical and undercritical cases (Fig. 4)/lp_5_ip_5_i055_base/synth_pop_lp5_ip5_i055_base.toml", label = "baseline undercritical?")
 
     run!(sim)
     rd = ResultData(sim, style = "LightRD")
@@ -193,17 +193,17 @@ end
 bd = BatchData(rds)
 
 rep = buildreport(bd, "Report")
-generate(rep, BASE_FOLDER  *  "/applications/workdays_weekends/weekends_paper/lp_5_ip_5_i055_base")
+generate(rep, BASE_FOLDER  *  "/applications/3.15 Overcritical and undercritical cases (Fig. 4)/lp_5_ip_5_i055_base")
 
 
 # get aggregated info on total infections
 save_ag_data_base = tick_cases(bd)
 
 # !!! check the folder path !!!
-jldsave(BASE_FOLDER*"/applications/workdays_weekends/weekends_paper/lp_5_ip_5_i055_base/infections_ag.jld2"; save_ag_data_base)
+jldsave(BASE_FOLDER*"/applications/3.15 Overcritical and undercritical cases (Fig. 4)/lp_5_ip_5_i055_base/infections_ag.jld2"; save_ag_data_base)
 
 # !!! check the folder path !!!
-save_ag_data = JLD2.load(BASE_FOLDER  *"/applications/workdays_weekends/weekends_paper/lp_5_ip_5_i055_base/infections_ag.jld2")["save_ag_data_base"]
+save_ag_data = JLD2.load(BASE_FOLDER  *"/applications/3.15 Overcritical and undercritical cases (Fig. 4)/lp_5_ip_5_i055_base/infections_ag.jld2")["save_ag_data_base"]
 
 plot(save_ag_data.tick, [save_ag_data_base.mean], 
     #bar_width = 0.2,]

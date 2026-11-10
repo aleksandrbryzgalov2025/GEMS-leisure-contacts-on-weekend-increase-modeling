@@ -185,7 +185,7 @@ for i in 1:100
 
 # !!! check the folder path !!!
 
-    sim = Simulation(BASE_FOLDER * "/applications/workdays_weekends/weekends_paper/lp_5_ip_5_alt/synth_pop_lp5_ip5_alt.toml", label = "alternative latent period 5")
+    sim = Simulation(BASE_FOLDER * "/applications/3.12 Latent period vatiation (Fig. 2-3)/alternative/lp_5_ip_5_alt/synth_pop_lp5_ip5_alt.toml", label = "alternative latent period 5")
 
     run!(sim)
     rd = ResultData(sim, style = "LightRD")
@@ -198,17 +198,17 @@ bd = BatchData(rds)
 rep = buildreport(bd, "Report")
 
 # !!! check the folder path !!!
-generate(rep, BASE_FOLDER  *  "/applications/workdays_weekends/weekends_paper/lp_5_ip_5_alt")
+generate(rep, BASE_FOLDER  *  "/applications/3.12 Latent period vatiation (Fig. 2-3)/alternative/lp_5_ip_5_alt")
 
 
 # get aggregated info on total infections
 save_ag_data_base = tick_cases(bd)
 
 # !!! check the folder path !!!
-jldsave(BASE_FOLDER*"/applications/workdays_weekends/weekends_paper/lp_5_ip_5_alt/infections_ag.jld2"; save_ag_data_base)
+jldsave(BASE_FOLDER*"/applications/3.12 Latent period vatiation (Fig. 2-3)/alternative/lp_5_ip_5_alt/infections_ag.jld2"; save_ag_data_base)
 
 # !!! check the folder path !!!
-save_ag_data = JLD2.load(BASE_FOLDER  *"/applications/workdays_weekends/weekends_paper/lp_5_ip_5_alt/infections_ag.jld2")["save_ag_data_base"]
+save_ag_data = JLD2.load(BASE_FOLDER  *"/applications/3.12 Latent period vatiation (Fig. 2-3)/alternative/lp_5_ip_5_alt/infections_ag.jld2")["save_ag_data_base"]
 
 plot(save_ag_data.tick, [save_ag_data_base.mean], 
     #bar_width = 0.2,]
