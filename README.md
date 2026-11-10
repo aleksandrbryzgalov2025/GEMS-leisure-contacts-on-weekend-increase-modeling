@@ -4,6 +4,7 @@ To reproduce the results, the GEMS version 0.4.3 has to be properly installed.
 The collection includes the following:
 * Variation in the number of leisure contacts on the weekend day: 0.0; 2.5; 5.0; 7.5; 10.0; 12.5; 15.0; 17.5.
 * Variation of the latent period value (leisure contacts are 17.5): 1; 2; 3; 4; 5; 6; 7.
+* Variation of the latent period distribution: fixed value (5 days), uniform distribution in the interval [4;6] and zero-truncated Poisson distribution with the mean of 5 days.
 * Week structure variation combined with latent period variation (1 - 7): baseline (uniform contacts daily); 5 working days/ 2 weekend days; 4 working days/ 3 weekend days; 2 working days/ 2 weekend days.
 * Week structure variation (baseline (uniform contacts daily); 5 working days/ 2 weekend days; 4 working days/ 3 weekend days; 2 working days/ 2 weekend days) for 2 special cases: latent period equals 4 days and infectious period equals 6 days; latent period equals 6 days and infectious period equals 3 days.
 * Additional decrease of the working/ school contacts during the weekend combined with week structure variation (baseline (uniform contacts daily); 5 working days/ 2 weekend days; 4 working days/ 3 weekend days; 2 working days/ 2 weekend days) for 2 special cases: latent period equals 1 day and infectious period equals 5 days; latent period equals 6 days and infectious period equals 3 days.
